@@ -5,9 +5,39 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>wzero.dev</title>
+    <style>
+      body {
+        background-color: #000000;
+      }
+      
+      #loading {
+        z-index: 999;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+    </style>
   </head>
   <body>
+    <div id="loading">
+      <img src="/loading.svg" width="200" height="200" />
+      <div style="display: none; margin-top: 10%; width: 100vw; position: absolute; left: 50%; transform: translate(-50%); text-align: center; font-size: 1.3em; font-weight: bold; color: #ffffff;">Your browser does not support WebGL.</div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
+  <script>
+    // WebGL 지원 여부 검사
+    var canvas = document.createElement("canvas");
+    var gl =
+      canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    // Report the result.
+    if (gl && gl instanceof WebGLRenderingContext) {
+      // Your browser supports WebGL.
+    } else {
+      document.getElementById('loading').querySelector('img').src = "/error.svg"
+      document.getElementById('loading').querySelector('div').style.display = "block"
+    }
+  </script>
 </html>
