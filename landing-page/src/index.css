@@ -1,0 +1,232 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #000000;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#root {
+  margin: 0 auto;
+  text-align: center;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#root::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#intro {
+  z-index: 3;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#main {
+  z-index: 2;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.introduce {
+  z-index: 1;
+  text-align: center;
+  position: fixed;
+  font-size: 70px;
+  font-weight: bold;
+
+  @media (max-width: 950px) {
+    font-size: 30px;
+  }
+}
+
+#hello {
+  top: calc(50% - 250px);
+  left: calc(50% - 460px);
+
+  @media (max-width: 950px) {
+    top: calc(50% - 100px);
+    left: calc(50% - 145px);
+  }
+}
+
+#name {
+  bottom: calc(50% - 250px);
+  right: calc(50% - 460px);
+
+  @media (max-width: 950px) {
+    bottom: calc(50% - 100px);
+    right: calc(50% - 145px);
+  }
+}
+
+.buttons {
+  z-index: 99;
+  display: flex;
+  position: absolute;
+  align-items: center;
+  width: 500px;
+  height: 80px;
+  box-shadow: rgba(255, 255, 255, 0.5) 0px 0px 30px 0px;
+  border-radius: 48px;
+  bottom: 5%;
+  left: 50%;
+  transform: translate(-50%);
+  justify-content: space-between;
+  background-color: #000000;
+
+  @media (max-width: 950px) {
+    max-width: 500px;
+    width: 80%;
+    justify-content: space-around;
+  }
+}
+
+.buttons:hover {
+  box-shadow: rgba(255, 255, 255, 0.1) 0px 0px 30px 0px;
+
+  @media (max-width: 950px) {
+    box-shadow: rgba(255, 255, 255, 0.5) 0px 0px 30px 0px;
+  }
+}
+
+.buttons::before {
+  opacity:1;
+  transition: opacity 0.2s ease-out;
+  -moz-transition: opacity 0.2s ease-out;
+  -webkit-transition: opacity 0.2s ease-out;
+  -o-transition: opacity 0.2s ease-out;
+
+  z-index: -1;
+  content: '';
+  position: absolute;
+  top: -1.5%;
+  left: -1.5%;
+  width: 103%;
+  height: 103%;
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  border-radius: 48px;
+  animation: animate 5s linear infinite;
+}
+
+.buttons::after {
+  z-index: -1;
+  content: '';
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  border-radius: 48px;
+  background: #000000;
+}
+
+.buttons:hover::before {
+  opacity:0;
+  transition: opacity 0.2s ease-out;
+  -moz-transition: opacity 0.2s ease-out;
+  -webkit-transition: opacity 0.2s ease-out;
+  -o-transition: opacity 0.2s ease-out;
+}
+
+.o-button {
+  z-index: 999;
+  text-align: center !important;
+  padding: 0px;
+  outline: none;
+  border: none;
+  background-color: #000000;
+  color: rgba(255, 255, 255, 0.87);
+  cursor: pointer;
+  font-size: 22px;
+  border-radius: 48px;
+  height: 80px;
+  width: 150px;
+  font-weight: bold;
+  position: relative;
+  
+  @media (max-width: 950px) {
+    font-size: 1.1em;
+    border-radius: 30px;
+    width: calc(25%);
+    height: calc(75%);
+    box-shadow: rgba(255, 255, 255, 0.2) 0px 0px 20px 0px;
+  }
+}
+
+.o-button::before {
+  opacity:0;
+  transition: opacity 0.2s ease-out;
+  -moz-transition: opacity 0.2s ease-out;
+  -webkit-transition: opacity 0.2s ease-out;
+  -o-transition: opacity 0.2s ease-out;
+
+  z-index: -1;
+  content: '';
+  position: absolute;
+  top: -1.5%;
+  left: -1.5%;
+  width: 103%;
+  height: 103%;
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  border-radius: 48px;
+  animation: animate 5s linear infinite;
+}
+
+.o-button::after {
+  z-index: -1;
+  content: '';
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  border-radius: 48px;
+  background-color: #000000;
+
+  @media (max-width: 950px) {
+    border-radius: 30px;
+  }
+}
+
+.o-button:hover::before {
+  opacity:1;
+  transition: opacity 0.2s ease-out;
+  -moz-transition: opacity 0.2s ease-out;
+  -webkit-transition: opacity 0.2s ease-out;
+  -o-transition: opacity 0.2s ease-out;
+}
+
+@keyframes animate {
+  0% {
+    filter: blur(10px) hue-rotate(0deg);
+  }
+  100% {
+    filter: blur(10px) hue-rotate(360deg);
+  }
+}
