@@ -28,7 +28,7 @@ By_0w0i0n0g0
 
 Check it out 👉 <a href="https://wzero.dev" target="_blank" rel="noreferrer noopener">wzero.dev</a>
 
-Check out this blog post 👉 <a href="https://blog.wzero.dev/reocords-wzero.dev" target="_blank" rel="noreferrer noopener">Link</a>
+Check out this blog post 👉 <a href="https://blog.wzero.dev/toy-project/wzero.dev" target="_blank" rel="noreferrer noopener">Link</a>
 
 <br>
 <br>
