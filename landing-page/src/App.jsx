@@ -3,6 +3,77 @@ import './index.css'
 
 const Spline = lazy(() => import('@splinetool/react-spline')) // import Spline from '@splinetool/react-spline'
 
+// 암호화된 페이로드
+const ENC = {
+  name: {
+    salt_b64: "49nVLCPFSjDxKAorg1hZug==",
+    iv_b64: "omrFdvM2SUUItSPO",
+    ct_b64: "d/fs5Ex5heC3r2GIQHlBc/fO1hDKmChEVg=="
+  },
+  cv: {
+    salt_b64: "LXwYOkook184FlSXRndLeg==",
+    iv_b64: "O/pjBiYuHE32+rK+",
+    ct_b64: "R37UyoXUrKBtjNTNa9nHW5tb69sq8d0DlVOaLoH2+Vrg/MDraSdXQ8JIdJis+yYhBhIR2MXW7Ul9Sc/oUfvhwBlea2ZrAoWm9q8w/nCJ"
+  },
+  paramNames: ['ref']
+}
+
+function b64ToBytes(b64) {
+  if (!b64) return null
+  return Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+}
+
+async function deriveAesKeyFromCode(code, saltBytes) {
+  const enc = new TextEncoder()
+  const baseKey = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(code),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveKey']
+  )
+  return crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: saltBytes,
+      iterations: 120000,
+      hash: 'SHA-256'
+    },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  )
+}
+
+async function decryptText(ct_b64, iv_b64, salt_b64, code) {
+  try {
+    const salt = b64ToBytes(salt_b64)
+    const iv = b64ToBytes(iv_b64)
+    const ct = b64ToBytes(ct_b64)
+    if (!salt || !iv || !ct) return null
+    const key = await deriveAesKeyFromCode(code, salt)
+    const ptBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct)
+    return new TextDecoder().decode(ptBuf)
+  } catch {
+    return null
+  }
+}
+
+function getReferralCode() {
+  try {
+    const url = new URL(window.location.href)
+    const params = url.searchParams
+    for (const p of ENC.paramNames) {
+      const v = params.get(p)
+      if (v) return v
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
 export default function App() {
 
   // 화면 size 가져오기
@@ -16,76 +87,6 @@ export default function App() {
   const [cvUrl, setCvUrl] = useState(null)
   const canShowCvRef = useRef(false)
 
-  // 암호화된 페이로드
-  const ENC = {
-    name: {
-      salt_b64: "49nVLCPFSjDxKAorg1hZug==",
-      iv_b64: "omrFdvM2SUUItSPO",
-      ct_b64: "d/fs5Ex5heC3r2GIQHlBc/fO1hDKmChEVg=="
-    },
-    cv: {
-      salt_b64: "LXwYOkook184FlSXRndLeg==",
-      iv_b64: "O/pjBiYuHE32+rK+",
-      ct_b64: "R37UyoXUrKBtjNTNa9nHW5tb69sq8d0DlVOaLoH2+Vrg/MDraSdXQ8JIdJis+yYhBhIR2MXW7Ul9Sc/oUfvhwBlea2ZrAoWm9q8w/nCJ"
-    },
-    paramNames: ['ref']
-  }
-
-  function b64ToBytes(b64) {
-    if (!b64) return null
-    return Uint8Array.from(atob(b64), c => c.charCodeAt(0))
-  }
-
-  async function deriveAesKeyFromCode(code, saltBytes) {
-    const enc = new TextEncoder()
-    const baseKey = await crypto.subtle.importKey(
-      'raw',
-      enc.encode(code),
-      { name: 'PBKDF2' },
-      false,
-      ['deriveKey']
-    )
-    return crypto.subtle.deriveKey(
-      {
-        name: 'PBKDF2',
-        salt: saltBytes,
-        iterations: 120000,
-        hash: 'SHA-256'
-      },
-      baseKey,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['decrypt']
-    )
-  }
-
-  async function decryptText(ct_b64, iv_b64, salt_b64, code) {
-    try {
-      const salt = b64ToBytes(salt_b64)
-      const iv = b64ToBytes(iv_b64)
-      const ct = b64ToBytes(ct_b64)
-      if (!salt || !iv || !ct) return null
-      const key = await deriveAesKeyFromCode(code, salt)
-      const ptBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct)
-      return new TextDecoder().decode(ptBuf)
-    } catch {
-      return null
-    }
-  }
-
-  function getReferralCode() {
-    try {
-      const url = new URL(window.location.href)
-      const params = url.searchParams
-      for (const p of ENC.paramNames) {
-        const v = params.get(p)
-        if (v) return v
-      }
-      return null
-    } catch {
-      return null
-    }
-  }
 
   useEffect(() => {
     let cancelled = false
@@ -107,15 +108,29 @@ export default function App() {
   // id에 해당하는 요소를 서서히 나타내는 애니메이션 함수
   async function displayFadeIn(id) {
     return new Promise((resolve) => {
+      const element = document.getElementById(id);
+      if (!element) {
+        console.warn(`Element with id '${id}' not found`);
+        resolve();
+        return;
+      }
+      
       const animation = setInterval(async () => {
-        const opacity = parseFloat(document.getElementById(id).style.opacity) + 0.1;
-        document.getElementById(id).style.opacity = opacity;
+        const currentElement = document.getElementById(id);
+        if (!currentElement) {
+          clearInterval(animation);
+          resolve();
+          return;
+        }
+        
+        const opacity = parseFloat(currentElement.style.opacity) + 0.1;
+        currentElement.style.opacity = opacity;
         if (opacity >= 1) {
           clearInterval(animation);
           resolve();
         }
       }, 50);
-      if (document.getElementById(id).tagName === 'BUTTON') {
+      if (element.tagName === 'BUTTON') {
         setButtonDisable(false)
       }
     });
@@ -132,7 +147,10 @@ export default function App() {
     if(spline.findObjectByName('0W')){
 
       // 로딩 화면 삭제
-      document.getElementById('loading').remove() // 로딩 화면은 index.html에 있어서 로딩 중에 가장 먼저 보여짐.
+      const loadingElement = document.getElementById('loading');
+      if (loadingElement) {
+        loadingElement.remove();
+      }
 
       // intro 출력
       displayFadeIn('intro')
@@ -141,20 +159,51 @@ export default function App() {
       setTimeout(() => {
 
         // intro 삭제
-        document.getElementById('intro').remove()
+        const introElement = document.getElementById('intro');
+        if (introElement) {
+          introElement.remove();
+        }
 
         // main 출력
-        document.getElementById('main').style.display = 'block'
-        splineMain.current.emitEvent("start", "0W")
+        const mainElement = document.getElementById('main');
+        if (mainElement) {
+          mainElement.style.display = 'block';
+          if (splineMain.current) {
+            splineMain.current.emitEvent("start", "0W");
+          }
+        }
 
         // 순차적으로 서서히 나타나는 애니메이션
-        document.getElementById('hello').style.display = 'block'
-        document.getElementById('name').style.display = 'block'
-        document.getElementById('buttons').style.display = 'flex'
-        document.getElementById('blog').style.display = 'block'
-        document.getElementById('github').style.display = 'block'
+        const helloElement = document.getElementById('hello');
+        if (helloElement) {
+          helloElement.style.display = 'block';
+        }
+        
+        const nameElement = document.getElementById('name');
+        if (nameElement) {
+          nameElement.style.display = 'block';
+        }
+        
+        const buttonsElement = document.getElementById('buttons');
+        if (buttonsElement) {
+          buttonsElement.style.display = 'flex';
+        }
+        
+        const blogElement = document.getElementById('blog');
+        if (blogElement) {
+          blogElement.style.display = 'block';
+        }
+        
+        const githubElement = document.getElementById('github');
+        if (githubElement) {
+          githubElement.style.display = 'block';
+        }
+        
         if (canShowCvRef.current) {
-          document.getElementById('cv').style.display = 'block'
+          const cvElement = document.getElementById('cv');
+          if (cvElement) {
+            cvElement.style.display = 'block';
+          }
         }
 
         displayFadeIn('main')
